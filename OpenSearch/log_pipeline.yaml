@@ -1,0 +1,24 @@
+playback-log-pipeline:
+  source:
+    http:
+      ssl: false
+  buffer:
+    bounded_blocking:
+      buffer_size: 2000000 # max number of records the buffer accepts
+      batch_size: 1024 # max number of records the buffer drains after each read
+  
+  processor:
+    - grok: 
+        match:
+           log: [ '%{YEAR:year}-%{MONTHNUM:month}-%{MONTHDAY:day}_%{TIME:time}\t%{WORD:source}\t%{WORD:Type1}\.%{GREEDYDATA:Vehicle}\.%{INT:TrainNumber}\.%{WORD:XX}\.%{WORD:Type2}\t%{NUMBER:Status1}\t%{INT:status2}' ]
+  
+ #route:
+  # - playback_atotrain: '/logfile == "ATO.Train"'
+  
+  sink:
+    - opensearch:
+        hosts: ["https://opensearch:9200"]
+        insecure: true
+        username: "admin"
+        password: "admin"
+        index: playback_atotrain    
